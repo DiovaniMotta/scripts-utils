@@ -9,7 +9,7 @@ Este script realiza a compressão de imagens armazenadas em um bucket da AWS S3.
 
 ## **Pré-requisitos**
 Certifique-se de ter os seguintes requisitos instalados antes de executar o script:
-- **Python 3.x**: Baixe e instale a versão mais recente do [Python](https://www.python.org/downloads/).
+- **Python 3.12.3**: Baixe e instale a versão mais recente do [Python](https://www.python.org/downloads/).
 - **Bibliotecas necessárias**: Instale as dependências executando o seguinte comando:
 
 ```sh
@@ -31,7 +31,7 @@ Além disso, é necessário que suas credenciais AWS estejam configuradas corret
 
    ```Dockerfile
    # Use uma imagem base com Python 3
-   FROM python:3.x-slim
+   FROM python:3.12.3-slim
 
    # Defina o diretório de trabalho
    WORKDIR /app

@@ -18,6 +18,57 @@ pip install boto3 pillow dask
 
 Além disso, é necessário que suas credenciais AWS estejam configuradas corretamente no ambiente para que o boto3 possa acessar o S3.
 
+
+É possível executar o script através de uma imagem docker. A seguir estão contidos os passos para configuração:
+
+### **Instruções de Configuração do Ambiente com Docker**
+
+- **Docker**: Certifique-se de ter o Docker instalado em seu sistema. Caso não tenha, você pode baixar e instalar o Docker [aqui](https://www.docker.com/get-started).
+
+1. **Criação do Dockerfile**
+
+   Crie um arquivo chamado `Dockerfile` no mesmo diretório do seu script com o seguinte conteúdo:
+
+   ```Dockerfile
+   # Use uma imagem base com Python 3
+   FROM python:3.x-slim
+
+   # Defina o diretório de trabalho
+   WORKDIR /app
+
+   # Copie os arquivos do script e o arquivo CSV para o container
+   COPY . /app
+
+   # Instale as dependências necessárias
+   RUN pip install boto3 pillow dask
+
+   # Exponha a porta 80, caso necessário
+   EXPOSE 80
+
+   # Comando para rodar o script
+   CMD ["python", "compress_images_from_S3.py"]
+   ```
+
+2. **Construção da Imagem Docker**
+
+   No terminal, navegue até o diretório onde o `Dockerfile` está localizado e execute o comando abaixo para construir a imagem Docker:
+
+   ```sh
+   docker build -t compress-images-s3 .
+   ```
+
+3. **Execução do Container**
+
+   Após a imagem ser construída, você pode rodar o container usando o comando abaixo. Lembre-se de fornecer os parâmetros necessários para a execução do script, como o nome do bucket S3 e o caminho para o arquivo CSV.
+
+   ```sh
+   docker run -v /local/path/to/csv:/app/dataset.csv compress-images-s3 --bucket_name meu-bucket --csv_path /app/dataset.csv
+   ```
+
+   **Notas:**
+   - Substitua `/local/path/to/csv` pelo caminho real onde o arquivo CSV está localizado em seu sistema local.
+   - O comando `-v /local/path/to/csv:/app/dataset.csv` monta o arquivo CSV no container, permitindo que o script o acesse.
+
 ## **Parâmetros de Entrada**
 O script aceita os seguintes argumentos:
 

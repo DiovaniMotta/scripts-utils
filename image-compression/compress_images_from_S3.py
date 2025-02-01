@@ -83,7 +83,7 @@ def compress_image(path):
 def process(filepath):
     logging.info(f'Reading dataset from file: {filepath}')
     data_set = read_csv(filepath)
-    logging.info(f'Amount of objects read from CSV file: {data_set.shape[0]}')
+    logging.info(f'Amount of objects read from CSV file: {data_set.shape[0]}.')
     for _, row in data_set.iterrows():
         path = row['path']
         logging.info(f'Start processing object: {path}')
@@ -110,6 +110,6 @@ if __name__ == "__main__":
     TEMP_PATH = args.temp_dir
     PERCENT_COMPRESS_QUALITY = args.perc_compression_quality
 
-    logging.info(f"Settings:\n - Max Image Pixels: {Image.MAX_IMAGE_PIXELS}\n - Compression Quality Percentage: {PERCENT_COMPRESS_QUALITY} %\n - Bucket Name: {BUCKET_NAME}\n - Temp Dir: {TEMP_PATH}\n - CSV Path: {args.csv_path}")
+    logging.info(f"Settings:\n - Max Image Pixels: {Image.MAX_IMAGE_PIXELS}\n - Compression Quality Percentage: {PERCENT_COMPRESS_QUALITY}%\n - Bucket Name: {BUCKET_NAME}\n - Temp Dir: {TEMP_PATH}\n - CSV Path: {args.csv_path}")
 
     process(args.csv_path)

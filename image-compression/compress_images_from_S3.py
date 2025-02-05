@@ -1,6 +1,7 @@
 import io
 import os
 import boto3
+import shutil
 import logging
 import argparse
 import tempfile
@@ -37,6 +38,8 @@ def get_file_size(file_path):
 
 def download_file_from_s3(path):
     logging.info(f'Downloading object {path} from AWS S3.')
+    dir_path = os.path.join(TEMP_PATH, *path.split("/")[:-1])
+    os.makedirs(dir_path, exist_ok=True)
     absolute_path = os.path.join(TEMP_PATH, path)
     s3.download_file(BUCKET_NAME, path, absolute_path)
     size_in_bytes = get_file_size(absolute_path)
@@ -48,6 +51,10 @@ def delete_temp_file(path):
     if absolute_path.exists():
         absolute_path.unlink()
         logging.info(f"File {absolute_path} was deleted.")
+        sub_dirs = os.path.join(TEMP_PATH, *path.split("/")[:-1])
+        if os.path.exists(sub_dirs):
+            shutil.rmtree(sub_dirs)
+            logging.info(f"Directories {sub_dirs} were deleted.")
     else:
         raise Exception(f"File {absolute_path} not found.")
 
@@ -83,7 +90,7 @@ def compress_image(path):
 def process(filepath):
     logging.info(f'Reading dataset from file: {filepath}')
     data_set = read_csv(filepath)
-    logging.info(f'Amount of objects read from CSV file: {data_set.shape[0]}.')
+    logging.info(f'Amount of objects read from CSV file: {data_set.shape[0]}')
     for _, row in data_set.iterrows():
         path = row['path']
         logging.info(f'Start processing object: {path}')
@@ -110,6 +117,6 @@ if __name__ == "__main__":
     TEMP_PATH = args.temp_dir
     PERCENT_COMPRESS_QUALITY = args.perc_compression_quality
 
-    logging.info(f"Settings:\n - Max Image Pixels: {Image.MAX_IMAGE_PIXELS}\n - Compression Quality Percentage: {PERCENT_COMPRESS_QUALITY}%\n - Bucket Name: {BUCKET_NAME}\n - Temp Dir: {TEMP_PATH}\n - CSV Path: {args.csv_path}")
+    logging.info(f"Settings:\n - Max Image Pixels: {Image.MAX_IMAGE_PIXELS}\n - Compression Quality Percentage: {PERCENT_COMPRESS_QUALITY} %\n - Bucket Name: {BUCKET_NAME}\n - Temp Dir: {TEMP_PATH}\n - CSV Path: {args.csv_path}")
 
     process(args.csv_path)

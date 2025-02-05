@@ -1,7 +1,6 @@
 import io
 import os
 import boto3
-import shutil
 import logging
 import argparse
 import tempfile
@@ -36,25 +35,25 @@ def read_csv(filepath):
 def get_file_size(file_path):
     return os.stat(file_path).st_size
 
+def extract_filename_from_path(path):
+    parts = path.split("/")
+    return parts[-1] if len(parts) > 1 else path
+
 def download_file_from_s3(path):
     logging.info(f'Downloading object {path} from AWS S3.')
-    dir_path = os.path.join(TEMP_PATH, *path.split("/")[:-1])
-    os.makedirs(dir_path, exist_ok=True)
-    absolute_path = os.path.join(TEMP_PATH, path)
+    file_name = extract_filename_from_path(path)
+    absolute_path = os.path.join(TEMP_PATH, file_name)
     s3.download_file(BUCKET_NAME, path, absolute_path)
     size_in_bytes = get_file_size(absolute_path)
     size_in_mbs = bytes_to_mb(size_in_bytes)
     logging.info(f'File saved in {absolute_path} with size: {size_in_mbs} MB')
 
 def delete_temp_file(path):
-    absolute_path = Path(os.path.join(TEMP_PATH, path))
+    file_name = extract_filename_from_path(path)
+    absolute_path = Path(os.path.join(TEMP_PATH, file_name))
     if absolute_path.exists():
         absolute_path.unlink()
         logging.info(f"File {absolute_path} was deleted.")
-        sub_dirs = os.path.join(TEMP_PATH, *path.split("/")[:-1])
-        if os.path.exists(sub_dirs):
-            shutil.rmtree(sub_dirs)
-            logging.info(f"Directories {sub_dirs} were deleted.")
     else:
         raise Exception(f"File {absolute_path} not found.")
 
@@ -67,7 +66,8 @@ def upload_file_from_s3(path, content):
 
 def compress_image(path):
     try:
-        absolute_path = os.path.join(TEMP_PATH, path)
+        file_name = extract_filename_from_path(path)
+        absolute_path = os.path.join(TEMP_PATH, file_name)
         with Image.open(absolute_path) as img:
             buffer = io.BytesIO()
             match img.format:
@@ -88,18 +88,22 @@ def compress_image(path):
         return None
 
 def process(filepath):
-    logging.info(f'Reading dataset from file: {filepath}')
-    data_set = read_csv(filepath)
-    logging.info(f'Amount of objects read from CSV file: {data_set.shape[0]}')
-    for _, row in data_set.iterrows():
-        path = row['path']
-        logging.info(f'Start processing object: {path}')
-        download_file_from_s3(path)
-        buffer_compress_file = compress_image(path)
-        upload_file_from_s3(path, buffer_compress_file)
-        delete_temp_file(path)
-        logging.info(f'End object processing: {path}')
-    logging.info("Finished processment...")
+    try:
+        logging.info(f'Reading dataset from file: {filepath}')
+        data_set = read_csv(filepath)
+        logging.info(f'Amount of objects read from CSV file: {data_set.shape[0]}')
+        for _, row in data_set.iterrows():
+            path = row['path']
+            logging.info(f'Start processing object: {path}')
+            download_file_from_s3(path)
+            buffer_compress_file = compress_image(path)
+            upload_file_from_s3(path, buffer_compress_file)
+            delete_temp_file(path)
+            logging.info(f'End object processing: {path}')
+        logging.info("Finished processment...")
+    except Exception as e:
+        logging.critical(f"Error generic during compression process: {e}")
+        return None
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Script settings configuration.")

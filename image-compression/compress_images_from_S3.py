@@ -4,7 +4,7 @@ import boto3
 import logging
 import argparse
 import tempfile
-from PIL import Image
+from PIL import Image, ImageOps
 from pathlib import Path
 import dask.dataframe as dd
 from datetime import datetime
@@ -77,7 +77,8 @@ def compress_image(path):
                     img.save(buffer, format="PNG", optimize=True)
                 case "JPEG" | "JPG":
                     logging.info(f'Compressing {absolute_path} object as JPEG/JPG file')
-                    img.save(buffer, format="JPEG", quality=PERCENT_COMPRESS_QUALITY, optimize=True)
+                    fixed_image = ImageOps.exif_transpose(img)
+                    fixed_image.save(buffer, format="JPEG", quality=PERCENT_COMPRESS_QUALITY, optimize=True)
                 case _:
                     return Exception(f'Format {img.format} not supported by file : {path}!')
             buffer.seek(0)

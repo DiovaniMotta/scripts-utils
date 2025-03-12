@@ -3,6 +3,8 @@
 ## Descrição
 Este script tem como finalidade processar arquivos de log contendo informações sobre compressão de arquivos e armazenar os resultados em um arquivo CSV. Ele extrai dados relevantes, como tamanho original e comprimido dos arquivos, nome do bucket, caminho do arquivo CSV e ID do objeto processado.
 
+O script analisa as informações logadas pela execução do [script de compressão de imagens](https://github.com/DiovaniMotta/scripts-utils/tree/main/image-compression), extraindo os dados necessários para gerar um relatório estruturado em CSV.
+
 ## Parâmetros
 O script aceita os seguintes parâmetros:
 
@@ -61,4 +63,7 @@ Após o processamento do log, o arquivo CSV gerado terá um formato semelhante a
 execution_date;bucket_name;file;object;original_size_mb;compressed_size_mb;perc_compression
 2024-03-10;my-bucket;/data/file.csv;obj_123;50.5;25.2;50.099
 ```
+
+## Referências
+- [Script de Compressão de Imagens](https://github.com/DiovaniMotta/scripts-utils/tree/main/image-compression)
 

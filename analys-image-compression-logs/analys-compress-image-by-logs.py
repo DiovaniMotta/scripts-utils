@@ -3,13 +3,13 @@ import csv
 import os
 import argparse
 
-def create_csv_report_file(file_name, records_dict):
+def create_csv_report_file(file_name, records):
     file_exists = os.path.exists(file_name)
     with open(file_name, 'a', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=';')
         if not file_exists:
             writer.writerow(["execution_date", "bucket_name", "file", "object", "original_size_mb", "compressed_size_mb","perc_compression"])
-        writer.writerows(records_dict)
+        writer.writerows(records)
 
 def read_file(file_name):
     with open(file_name, 'r') as f:
@@ -22,7 +22,8 @@ def extract_size_file_from_row(line):
     matcher_value = re.search(r"size:?\s([\d\.]+) MB", line)
     return float(matcher_value.group(1)) if matcher_value else None
 
-def parse_log_file(log_file, output_csv, records_dict):
+def parse_log_file(log_file, output_csv):
+    records_dict = {}
     lines = read_file(log_file)
 
     object_id = None
@@ -59,6 +60,10 @@ def parse_log_file(log_file, output_csv, records_dict):
                     compressed_size_mb,
                     perc_compression
                 ]
+    save_report_file(output_csv, records_dict)
+
+
+def save_report_file(output_csv, records_dict):
     records = list(records_dict.values())
     create_csv_report_file(output_csv, records)
 
@@ -78,9 +83,8 @@ def calc_perc_compress(compressed_size_mb, original_size_mb):
 def read_file_logs(directory, report_file):
     for filename in os.listdir(directory):
         if filename.endswith(".log"):
-           records_dict = {}
            absolute_path =  os.path.join(directory, filename)
-           parse_log_file(absolute_path, report_file, records_dict)
+           parse_log_file(absolute_path, report_file)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Script settings configuration.")

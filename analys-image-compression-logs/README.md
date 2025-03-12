@@ -1,4 +1,4 @@
-# Log Processing Script
+# Analisador de logs do processo de compressão de imagens armazenadas em um bucket AWS S3
 
 ## Descrição
 Este script tem como finalidade processar arquivos de log contendo informações sobre compressão de arquivos e armazenar os resultados em um arquivo CSV. Ele extrai dados relevantes, como tamanho original e comprimido dos arquivos, nome do bucket, caminho do arquivo CSV e ID do objeto processado.

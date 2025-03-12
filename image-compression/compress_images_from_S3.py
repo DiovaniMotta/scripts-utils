@@ -59,6 +59,9 @@ def delete_temp_file(path):
 
 
 def upload_file_from_s3(path, content):
+    if content is None or content.getbuffer().nbytes == 0:
+        logging.warning(f"Failed to upload {path}: No content provided (compression might have failed).")
+        return
     size_in_bytes = content.getbuffer().nbytes
     size_in_mb = bytes_to_mb(size_in_bytes)
     logging.info(f'Upload object {path} for bucket {BUCKET_NAME} with size {size_in_mb} MB')
@@ -80,7 +83,7 @@ def compress_image(path):
                     fixed_image = ImageOps.exif_transpose(img)
                     fixed_image.save(buffer, format="JPEG", quality=PERCENT_COMPRESS_QUALITY, optimize=True)
                 case _:
-                    return Exception(f'Format {img.format} not supported by file : {path}!')
+                    logging.warning(f'Format {img.format} does not support by compression process. File: {path} will be ignored!')
             buffer.seek(0)
             return buffer
 

@@ -8,6 +8,7 @@ from PIL import Image, ImageOps
 from pathlib import Path
 import dask.dataframe as dd
 from datetime import datetime
+from botocore.exceptions import ClientError
 
 BUCKET_NAME = ''
 TEMP_PATH = ''
@@ -60,7 +61,7 @@ def delete_temp_file(path):
 
 def upload_file_from_s3(path, content):
     if content is None or content.getbuffer().nbytes == 0:
-        logging.warning(f"Failed to upload {path}: No content provided (compression might have failed).")
+        logging.warning(f"[INVALID_CONTENT] - Failed to upload {path}: No content provided (compression might have failed).")
         return
     size_in_bytes = content.getbuffer().nbytes
     size_in_mb = bytes_to_mb(size_in_bytes)
@@ -83,7 +84,7 @@ def compress_image(path):
                     fixed_image = ImageOps.exif_transpose(img)
                     fixed_image.save(buffer, format="JPEG", quality=PERCENT_COMPRESS_QUALITY, optimize=True)
                 case _:
-                    logging.warning(f'Format {img.format} does not support by compression process. File: {path} will be ignored!')
+                    logging.warning(f'[INVALID_EXTENSION] - Format {img.format} does not support by compression process. File: {path} will be ignored!')
             buffer.seek(0)
             return buffer
 
@@ -99,7 +100,14 @@ def process(filepath):
         for _, row in data_set.iterrows():
             path = row['path']
             logging.info(f'Start processing object: {path}')
-            download_file_from_s3(path)
+            try:
+                download_file_from_s3(path)
+            except ClientError as e:
+                if e.response['Error']['Code'] == '404':
+                    logging.warning(f'[FILE_DELETED] - Object {path} was removed from bucket. It will be ignored!')
+                    continue
+                else:
+                    raise
             buffer_compress_file = compress_image(path)
             upload_file_from_s3(path, buffer_compress_file)
             delete_temp_file(path)

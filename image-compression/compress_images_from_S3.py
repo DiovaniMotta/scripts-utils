@@ -79,7 +79,7 @@ def compress_image(path):
                     logging.info(f'Compressing {absolute_path} object as PNG file')
                     img = img.convert("P" if img.mode != "P" else img.mode)
                     img.save(buffer, format="PNG", optimize=True)
-                case "JPEG" | "JPG":
+                case "JPEG" | "JPG" | "MPO":
                     logging.info(f'Compressing {absolute_path} object as JPEG/JPG file')
                     fixed_image = ImageOps.exif_transpose(img)
                     fixed_image.save(buffer, format="JPEG", quality=PERCENT_COMPRESS_QUALITY, optimize=True)

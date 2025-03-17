@@ -6,13 +6,10 @@ import boto3
 import logging
 import argparse
 import tempfile
-from PIL import ImageOps
+from PIL import ImageOps, Image, ImageFile
 from pathlib import Path
 import dask.dataframe as dd
 from datetime import datetime
-
-from PIL.Image import Image
-from PIL.ImageFile import ImageFile
 from botocore.exceptions import ClientError
 
 BUCKET_NAME = ''

@@ -13,7 +13,7 @@ Certifique-se de ter os seguintes requisitos instalados antes de executar o scri
 - **Bibliotecas necessárias**: Instale as dependências executando o seguinte comando:
 
 ```sh
-pip install boto3 pillow dask
+pip install boto3 pillow dask opencv-python
 ```
 
 Além disso, é necessário que suas credenciais AWS estejam configuradas corretamente no ambiente para que o boto3 possa acessar o S3.
@@ -40,7 +40,7 @@ Além disso, é necessário que suas credenciais AWS estejam configuradas corret
    COPY . /app
 
    # Instale as dependências necessárias
-   RUN pip install boto3 pillow dask
+   RUN pip install boto3 pillow dask opencv-python
 
    # Exponha a porta 80, caso necessário
    EXPOSE 80
@@ -77,6 +77,7 @@ O script aceita os seguintes argumentos:
 | `--max_image_pixels`        | Número máximo de pixels permitidos por imagem               | `1000000000`                | `--max_image_pixels 500000000` |
 | `--perc_compression_quality` | Qualidade da compressão da imagem (0 a 100)                   | `80`                         | `--perc_compression_quality 75` |
 | `--temp_dir`                 | Diretório temporário para armazenar os arquivos baixados    | `Sistema operacional`        | `--temp_dir /tmp` |
+ `--ignore_trunc`             | Indica se erros de truncamento (arquivos corrompidos) devem ser ignorados. Se `True`, o script continua mesmo com arquivos corrompidos. | `True` | `--ignore_trunc False` |
 | `--bucket_name`              | Nome do bucket S3 onde as imagens estão armazenadas           | **Obrigatório**            | `--bucket_name meu-bucket` |
 | `--csv_path`                 | Caminho para o arquivo CSV contendo as chaves das imagens     | **Obrigatório**            | `--csv_path /caminho/para/dataset.csv` |
 
@@ -113,6 +114,19 @@ Exemplo de log gerado:
 2024-02-01 12:00:15 - INFO - Upload object imagens/imagem1.jpg for bucket meu-bucket with size 2.1 MB
 2024-02-01 12:00:20 - INFO - File /tmp/imagem1.jpg was deleted.
 ```
+
+## **Avisos**
+Durante a execução do script, os seguintes avisos podem ser registrados nos logs:
+
+Aqui está a tabela formatada conforme solicitado:
+
+| **Parâmetro**              | **Descrição**                                                                                                                                         |
+|----------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **[CORRUPT_FILE]**          | A imagem está corrompida e não pôde ser lida corretamente. Ela será ignorada.                                                                         |
+| **[INVALID_EXTENSION]**     | O formato da imagem não é suportado para compressão (como BMP ou TIFF, por exemplo). Esse arquivo será ignorado.                                       |
+| **[INVALID_CONTENT]**       | Falha ao tentar fazer upload de uma imagem com conteúdo vazio, o que pode indicar que a compressão falhou.                                            |
+| **[FILE_DELETED]**          | O arquivo foi removido do bucket S3 antes de ser processado.                                                                                         |
+| **[TRUNCATED_IMAGE]**       | A imagem estava truncada, mas, dependendo da configuração, o erro pode ser ignorado ou registrado.                                                    | 
 
 ## **Conclusão**
 Este script é uma ferramenta eficiente para reduzir o tamanho de imagens armazenadas no S3, ajudando a economizar espaço e reduzir custos de armazenamento. Certifique-se de fornecer os argumentos corretamente e acompanhar os logs para monitorar o processamento.

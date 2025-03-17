@@ -1,13 +1,18 @@
 import io
 import os
+
+import cv2
 import boto3
 import logging
 import argparse
 import tempfile
-from PIL import Image, ImageOps
+from PIL import ImageOps
 from pathlib import Path
 import dask.dataframe as dd
 from datetime import datetime
+
+from PIL.Image import Image
+from PIL.ImageFile import ImageFile
 from botocore.exceptions import ClientError
 
 BUCKET_NAME = ''
@@ -39,6 +44,9 @@ def get_file_size(file_path):
 def extract_filename_from_path(path):
     parts = path.split("/")
     return parts[-1] if len(parts) > 1 else path
+
+def valid_file(path):
+    return cv2.imread(path)
 
 def download_file_from_s3(path):
     logging.info(f'Downloading object {path} from AWS S3.')
@@ -72,6 +80,11 @@ def compress_image(path):
     try:
         file_name = extract_filename_from_path(path)
         absolute_path = os.path.join(TEMP_PATH, file_name)
+
+        if valid_file(absolute_path) is None:
+            logging.warning(f'[CORRUPT_FILE] - Object: {path} is corrupt. It will be ignored!')
+            return io.BytesIO()
+
         with Image.open(absolute_path) as img:
             buffer = io.BytesIO()
             match img.format:
@@ -122,6 +135,7 @@ if __name__ == "__main__":
 
     parser.add_argument("--max_image_pixels", type=int, default=1000000000, help="Maximum image size in pixels")
     parser.add_argument("--perc_compression_quality", type=int, default=80, help="Quality percentage that must be suspended in the image enlargement process (Range possible values: 0-100)")
+    parser.add_argument("--ignore_trunc", type=bool, default=True, help="Indicates whether truncation errors (corrupt files) should be ignored.")
     parser.add_argument("--temp_dir", type=str, default=tempfile.gettempdir(), help="Temporary existing directory for downloading files to be compressed")
     parser.add_argument("--bucket_name", type=str, required=True, help="S3 bucket name")
     parser.add_argument("--csv_path", type=str, required=True, help="CSV file path")
@@ -129,6 +143,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     Image.MAX_IMAGE_PIXELS = args.max_image_pixels
+    ImageFile.LOAD_TRUNCATED_IMAGES = args.ignore_trunc
     BUCKET_NAME = args.bucket_name
     TEMP_PATH = args.temp_dir
     PERCENT_COMPRESS_QUALITY = args.perc_compression_quality

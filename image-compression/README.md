@@ -118,9 +118,7 @@ Exemplo de log gerado:
 ## **Avisos**
 Durante a execução do script, os seguintes avisos podem ser registrados nos logs:
 
-Aqui está a tabela formatada conforme solicitado:
-
-| **Parâmetro**              | **Descrição**                                                                                                                                         |
+| **Código**              | **Descrição**                                                                                                                                         |
 |----------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **[CORRUPT_FILE]**          | A imagem está corrompida e não pôde ser lida corretamente. Ela será ignorada.                                                                         |
 | **[INVALID_EXTENSION]**     | O formato da imagem não é suportado para compressão (como BMP ou TIFF, por exemplo). Esse arquivo será ignorado.                                       |

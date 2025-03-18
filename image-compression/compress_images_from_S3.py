@@ -145,6 +145,6 @@ if __name__ == "__main__":
     TEMP_PATH = args.temp_dir
     PERCENT_COMPRESS_QUALITY = args.perc_compression_quality
 
-    logging.info(f"Settings:\n - Max Image Pixels: {Image.MAX_IMAGE_PIXELS}\n - Ignored truncated image:{ImageFile.LOAD_TRUNCATED_IMAGES}\n - Compression Quality Percentage: {PERCENT_COMPRESS_QUALITY} %\n - Bucket Name: {BUCKET_NAME}\n - Temp Dir: {TEMP_PATH}\n - CSV Path: {args.csv_path}")
+    logging.info(f"Settings:\n - Max Image Pixels: {Image.MAX_IMAGE_PIXELS}\n - Ignored Truncated Image:{ImageFile.LOAD_TRUNCATED_IMAGES}\n - Compression Quality Percentage: {PERCENT_COMPRESS_QUALITY} %\n - Bucket Name: {BUCKET_NAME}\n - Temp Dir: {TEMP_PATH}\n - CSV Path: {args.csv_path}")
 
     process(args.csv_path)

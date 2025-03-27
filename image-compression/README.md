@@ -3,7 +3,7 @@
 ## Descrição
 Este script realiza a compressão de imagens armazenadas em um bucket da AWS S3. A partir de um arquivo CSV recebido como parâmetro, o script:
 1. Faz o download das imagens do S3 para um diretório temporário.
-2. Comprime as imagens (PNG, JPG, JPEG, MPO) com base em uma qualidade definida.
+2. Comprime as imagens (PNG, JPG, JPEG, MPO, WEBP) com base em uma qualidade definida.
 3. Faz o upload das imagens comprimidas de volta ao bucket S3, substituindo os arquivos originais.
 4. Registra todas as ações em um arquivo de log para rastreabilidade.
 

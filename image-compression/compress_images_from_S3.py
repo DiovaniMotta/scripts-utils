@@ -93,6 +93,9 @@ def compress_image(path):
                     logging.info(f'Compressing {absolute_path} object as JPEG/JPG file')
                     fixed_image = ImageOps.exif_transpose(img)
                     fixed_image.save(buffer, format="JPEG", quality=PERCENT_COMPRESS_QUALITY, optimize=True)
+                case "WEBP":
+                    logging.info(f'Compressing {absolute_path} object with format WEBP to JPEG/JPG file')
+                    img.save(buffer, format="WEBP", quality=PERCENT_COMPRESS_QUALITY, optimize=True)
                 case _:
                     logging.warning(f'[INVALID_EXTENSION] - Format {img.format} does not support by compression process. File: {path} will be ignored!')
             buffer.seek(0)

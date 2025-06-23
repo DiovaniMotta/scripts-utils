@@ -1,4 +1,4 @@
-from resume_vector_poc.dateutils import datetime_to_str
+from dateutils import datetime_to_str
 
 
 def map_to_candidate(row):

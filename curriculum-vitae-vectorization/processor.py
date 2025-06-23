@@ -1,9 +1,9 @@
 import argparse
 from database_functions import *
 from logger import info
-from resume_vector_poc.data_formatter import *
-from resume_vector_poc.mappers import *
-from resume_vector_poc.vectors import BedrockClient
+from data_formatter import *
+from mappers import *
+from vectors import BedrockClient
 
 
 def process(config):

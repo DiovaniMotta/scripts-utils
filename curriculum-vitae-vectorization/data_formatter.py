@@ -1,5 +1,5 @@
-from resume_vector_poc.dateutils import calculate_diff_dates_as_string
-from resume_vector_poc.mappers import *
+from dateutils import calculate_diff_dates_as_string
+from mappers import *
 
 
 def format_period(period):

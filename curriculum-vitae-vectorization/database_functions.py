@@ -19,22 +19,6 @@ class Repository:
         except psycopg2.Error as e:
             print(f"Error creating database connection: {e}")
 
-# def create_connection(database_config):
-#     try:
-#         connection = psycopg2.connect(
-#             host=database_config['host'],
-#             port=database_config['port'],
-#             database=database_config['database'],
-#             user=database_config['user'],
-#             password=database_config['password']
-#         )
-#         print("Database connection created...")
-#         schema_name = database_config['schema_name']
-#         schema['name'] = schema_name
-#         return connection
-#     except psycopg2.Error as e:
-#         print(f"Error creating database connection: {e}")
-
     def insert_candidate_vector(self, record):
         cursor = self.connection.cursor()
         insert_command = f"""

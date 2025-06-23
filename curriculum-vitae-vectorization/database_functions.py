@@ -1,4 +1,5 @@
 import psycopg2
+from logger import info
 
 schema = {
    'name': 'public'
@@ -17,6 +18,8 @@ class Repository:
             print("Database connection created...")
             self.schema = configs['schema_name']
             self.type_integration = configs['type_integration']
+            info(f'[SCHEMA] - Processing records from: {self.schema}')
+            info(f'Type Integration: {self.type_integration}')
         except psycopg2.Error as e:
             print(f"Error creating database connection: {e}")
 
@@ -25,7 +28,7 @@ class Repository:
         insert_command = f"""
             INSERT INTO {self.schema}.candidate_resume_vector (candidate, content_resume, embedding) VALUES(%s, %s, %s);
         """
-        content = str(record.get("content")).replace('\n', ' ')
+        content = record.get("content")
         values = (record.get("candidateId"), content, record.get("embedding"))
         cursor.execute(insert_command, values)
         self.connection.commit()

@@ -75,7 +75,6 @@ def process(config):
             'content': str(resume_content),
             'embedding': embedding
         }
-        print(resume)
         repository.insert_candidate_vector(resume)
         info(f'Finished process for candidate {candidate_id}...\n')
     repository.close()

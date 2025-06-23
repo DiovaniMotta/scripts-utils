@@ -80,13 +80,19 @@ def map_to_phone_contact(row):
    return row[0]
 
 def map_to_settings(args):
+    mapping = {
+        'ALL_CANDIDATES' : 1,
+        'ONLY_NOT_PROCESSED_YET': 2
+    }
+
     database_config = {
         'host': args.host,
         'port': args.port,
         'database': args.database,
         'user': args.user,
         'password': args.password,
-        'schema_name': args.schema_name
+        'schema_name': args.schema_name,
+        'type_integration': mapping.get(args.type_integration)
     }
 
     aws_config = {

@@ -1,5 +1,6 @@
 from dateutils import calculate_diff_dates_as_string
 from mappers import *
+import re
 
 
 def format_period(period):
@@ -189,3 +190,10 @@ def format_phone_contact_info(contacts):
         if phone:
             lines.append(f' \t- {phone}\n')
     return '- Contatos telefônicos:\n'+ ''.join(lines) if lines else ''
+
+def sanitize_content(raw):
+    content = re.sub(r"[\[\],]", "", ''.join(raw))
+    content = content.replace('\n', ' ')
+    content = content.replace('\t', ' ')
+    content = content.strip()
+    return content

@@ -45,17 +45,19 @@ pip install boto3 pandas numpy pymysql python-dotenv tqdm
 
 ## Parâmetros de Entrada do Script
 
-| Parâmetro (CLI) | Nome Interno     | Tipo   | Obrigatório | Valor Padrão | Descrição                                        |
-|-----------------|------------------|--------|-------------|--------------|--------------------------------------------------|
-| -H, --host      | host             | str    | Sim         | -            | Host do servidor PostgreSQL                      |
-| -P, --port      | port             | int    | Não         | 5432         | Porta do servidor PostgreSQL                     |
-| -d, --database  | database         | str    | Sim         | -            | Nome do banco de dados PostgreSQL                |
-| -u, --user      | user             | str    | Sim         | -            | Usuário do banco de dados PostgreSQL             |
-| -p, --password  | password         | str    | Sim         | -            | Senha do usuário do banco de dados               |
-| -s, --schema_name | schema_name    | str    | Sim         | -            | Nome do schema do PostgreSQL                     |
-| -k, --aws_key   | aws_key          | str    | Não         | -            | AWS Access Key ID                                |
-| -a, --aws_secret| aws_secret       | str    | Não         | -            | AWS Secret Access Key                            |
-| -r, --aws_region| aws_region       | str    | Não         | sa-east-1    | Região AWS (padrão: sa-east-1)                   |
+| Parâmetro (CLI)   | Nome Interno       | Tipo | Obrigatório | Valor Padrão | Descrição                                                                                  |
+|-------------------|--------------------|------|--------------|---------------|--------------------------------------------------------------------------------------------|
+| `-H`, `--host`    | `host`             | str  | Sim          | -             | Host do servidor PostgreSQL                                                                |
+| `-P`, `--port`    | `port`             | int  | Não          | 5432          | Porta do servidor PostgreSQL                                                               |
+| `-d`, `--database`| `database`         | str  | Sim          | -             | Nome do banco de dados PostgreSQL                                                          |
+| `-u`, `--user`    | `user`             | str  | Sim          | -             | Usuário do banco de dados PostgreSQL                                                       |
+| `-p`, `--password`| `password`         | str  | Sim          | -             | Senha do usuário do banco de dados                                                         |
+| `-s`, `--schema_name` | `schema_name`  | str  | Sim          | -             | Nome do schema do PostgreSQL                                                               |
+| `-t`, `--type_integration` | `type_integration` | int  | Não          | 1             | Tipo de integração: `1` = ALL_CANDIDATES, `2` = ONLY_NOT_PROCESSED_YET (padrão: 1)        |
+| `-k`, `--aws_key` | `aws_key`          | str  | Não          | -             | AWS Access Key ID                                                                          |
+| `-a`, `--aws_secret` | `aws_secret`    | str  | Não          | -             | AWS Secret Access Key                                                                      |
+| `-r`, `--aws_region` | `aws_region`    | str  | Não          | sa-east-1     | Região AWS (padrão: sa-east-1)                                                             |
+
 
 ## Execução
 

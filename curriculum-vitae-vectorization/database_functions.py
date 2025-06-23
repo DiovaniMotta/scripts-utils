@@ -16,6 +16,7 @@ class Repository:
             )
             print("Database connection created...")
             self.schema = configs['schema_name']
+            self.type_integration = configs['type_integration']
         except psycopg2.Error as e:
             print(f"Error creating database connection: {e}")
 
@@ -30,11 +31,32 @@ class Repository:
         self.connection.commit()
 
     def get_candidates(self):
-        sql = f"""
-            SELECT id, name, email, about_you, professional_goal, professional_summary  
-            FROM {self.schema}.candidate
-            ORDER BY id  
-        """
+        if self.type_integration == 'ALL_CANDIDATES':
+            sql = f"""
+                SELECT id, name, email, about_you, professional_goal, professional_summary  
+                FROM {self.schema}.candidate
+                ORDER BY id  
+            """
+        else:
+            sql = f"""
+                SELECT 
+                id, 
+                name, 
+                email, 
+                about_you, 
+                professional_goal, 
+                professional_summary  
+                FROM 
+                {self.schema}.candidate ca
+                WHERE 
+                NOT EXISTS (
+                    SELECT 1 
+                    FROM {self.schema}.candidate_resume_vector crv
+                    WHERE crv.candidate = ca.id
+                )
+                ORDER BY 
+                id;
+            """
         with self.connection.cursor() as cursor:
             cursor.execute(sql)
             rows = cursor.fetchall()

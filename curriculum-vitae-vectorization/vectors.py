@@ -5,20 +5,21 @@ from logger import info
 
 class BedrockClient:
     def __init__(self, configs):
-        access_key = ''
-        secret_access_key = ''
-
-        if configs.get('key'):
+        if configs.get('key') and configs.get('secret'):
             access_key = configs.get('key')
-        if configs.get('secret'):
             secret_access_key = configs.get('secret')
 
-        self.client = boto3.client(
-            "bedrock-runtime",
-            aws_access_key_id=access_key,
-            aws_secret_access_key=secret_access_key,
-            region_name="sa-east-1"
-        )
+            self.client = boto3.client(
+                "bedrock-runtime",
+                aws_access_key_id=access_key,
+                aws_secret_access_key=secret_access_key,
+                region_name="sa-east-1"
+            )
+        else:
+            self.client = boto3.client(
+                "bedrock-runtime",
+                region_name="sa-east-1"
+            )
 
     def generate_embedding(self, data):
         payload = {

@@ -31,8 +31,13 @@ class Repository:
 
         start_time = time.time()
         with self.connection.cursor() as cursor:
+            cursor.execute("BEGIN;")
+            cursor.execute("SET LOCAL hnsw.ef_search = 100;")
+
             cursor.execute(sql, (vector, vector))
             rows = cursor.fetchall()
+
+            cursor.execute("COMMIT;")
 
         elapsed_time = time.time() - start_time
         warn(f'Filter: {orgin_filter}, Type: HNSW, Time Spent: {elapsed_time:.4f} seconds')
@@ -43,7 +48,7 @@ class Repository:
         sql = f"""
             SELECT ca.id, ca."name" 
             FROM {self.schema}.candidate ca 
-            JOIN {self.schema}.candidate_resume_vector_ivfflat crv 
+            JOIN {self.schema}.candidate_resume_vector_ivfflat_lists crv 
             ON crv.candidate = ca.id            
             WHERE crv.embedding <=> %s::vector < 1.0
             ORDER BY crv.embedding <=> %s::vector   
@@ -51,8 +56,13 @@ class Repository:
             """
         start_time = time.time()
         with self.connection.cursor() as cursor:
+            cursor.execute("BEGIN;")
+            cursor.execute("SET LOCAL ivfflat.probes = 10;")
+
             cursor.execute(sql, (vector, vector))
             rows = cursor.fetchall()
+
+            cursor.execute("COMMIT;")
 
         elapsed_time = time.time() - start_time
         warn(f'Filter: {orgin_filter}, Type: IVFFlat, Time Spent: {elapsed_time:.4f} seconds')

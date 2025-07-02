@@ -4,6 +4,7 @@ from logger import info
 
 
 class BedrockClient:
+
     def __init__(self, configs):
         if configs.get('key') and configs.get('secret'):
             access_key = configs.get('key')

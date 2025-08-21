@@ -129,14 +129,16 @@ pip install requests dask
 
 ## Parâmetros de Entrada
 
-| Parâmetro      | Descrição                                                                 | Padrão         | Exemplo |
-|--------------- |--------------------------------------------------------------------------|--------------- |---------|
-| `--host`       | Endereço do cluster Elasticsearch                                         | **Obrigatório**| `--host http://localhost:9200` |
-| `--mode`       | Modo de operação: ALL, DELETE, REINDEX, ONLY                             | `ALL`          | `--mode REINDEX` |
-| `--shards`     | Número de shards para criação de novos índices                           | `1`            | `--shards 3` |
-| `--replicas`   | Número de réplicas para criação de novos índices                         | `1`            | `--replicas 2` |
-| `--prefix`     | Prefixo dos índices a serem processados                                 | `hcm-rs-*`     | `--prefix hcm-rs-*` |
-| `--file`       | Caminho para o arquivo CSV com índices (obrigatório no modo ONLY)        | -              | `--file /app/indices.csv` |
+| Parâmetro      | Abreviação | Descrição                                                                 | Padrão         | Exemplo | Obrigatório |
+|--------------- |-----------|--------------------------------------------------------------------------|--------------- |---------|-------------|
+| `--host`       | `-H`      | Endereço do cluster Elasticsearch                                         | -              | `--host http://localhost:9200` | Verdadeiro |
+| `--mode`       | `-m`      | Modo de operação: ALL, DELETE, REINDEX, ONLY                             | `ALL`          | `--mode REINDEX` | Falso |
+| `--shards`     | `-s`      | Número de shards para criação de novos índices                           | `1`            | `--shards 3` | Falso |
+| `--replicas`   | `-r`      | Número de réplicas para criação de novos índices                         | `1`            | `--replicas 2` | Falso |
+| `--prefix`     | `-p`      | Prefixo dos índices a serem processados                                 | `hcm-rs-*`     | `--prefix hcm-rs-*` | Falso |
+| `--file`       | `-f`      | Caminho para o arquivo CSV com índices (obrigatório no modo ONLY)        | -              | `--file /app/indices.csv` | Falso* |
+
+*Obrigatório apenas se o modo selecionado for `ONLY`.
 
 ## Rastreabilidade e Logs
 

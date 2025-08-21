@@ -40,6 +40,8 @@ class Processor:
                 self.reindex(indexes)
             if self.mode == 'ONLY':
                 self.process_only_indexes()
+            if self.mode == 'SEARCH':
+                self.report()
         except Exception as e:
             log.error(f"An error occurred while executing the cluster maintenance routine : {e}")
             return None
@@ -123,6 +125,38 @@ class Processor:
             log.error(f"An error occurred while performing maintenance for specific indices : {e}")
             return None
 
+    def report(self):
+        total_memory = 0
+        total_docs = 0
+        total_shards = 0
+        total_replicas = 0
+        indexes_with_data = 0
+        indexes_without_data = 0
+
+        indexes = self.client.find_index_by_name(self.prefix)
+
+        log.info_with_print("-" * 100)
+        log.info_with_print(f"{'Index':50} {'Shards':>6} {'Réplicas':>9} {'Documents':>10} {'Memory (MB)':>14}")
+        log.info_with_print("-" * 100)
+
+        for entry in indexes:
+            log.info_with_print(
+                f"{entry['name']:50} {entry['number_of_shards']:>6} {entry['number_of_replicas']:>9} {entry['docsCount']:>10} {entry['memoryMB']:>14}")
+
+            total_memory += entry['memoryMB']
+            total_docs += entry['docsCount']
+            total_shards += entry['number_of_shards']
+            total_replicas += entry['number_of_replicas']
+            if entry['docsCount'] > 0:
+                indexes_with_data += 1
+            else:
+                indexes_without_data += 1
+
+        log.info_with_print("-" * 100)
+        log.info_with_print(f"{'TOTAL':50} {total_shards:>6} {total_replicas:>9} {total_docs:>10} {round(total_memory, 2):>14}")
+        log.info_with_print(f"Index with documents: {indexes_with_data}")
+        log.info_with_print(f"Index without documents: {indexes_without_data}")
+        log.info_with_print("-" * 100)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Script settings configuration.")
@@ -135,7 +169,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
          "-m", "--mode",
-        choices=["ALL", "DELETE", "REINDEX", "ONLY"],
+        choices=["ALL", "DELETE", "REINDEX", "ONLY", "SEARCH"],
         default='ALL',
         help="Choose the operation mode (default: ALL)"
     )

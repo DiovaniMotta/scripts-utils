@@ -5,15 +5,17 @@ Este script automatiza a manutenção de índices em clusters Elasticsearch, per
 
 O script pode operar em diferentes modos, realizando desde a exclusão de índices vazios até a reindexação completa de índices com backup automático. Todas as operações são registradas em logs detalhados para rastreabilidade.
 
+
 ## Modos de Operação
 O script suporta os seguintes modos de operação, definidos pelo parâmetro `--mode`:
 
-| Modo     | Descrição |
-|----------|-----------|
-| `ALL`    | Executa a exclusão de índices sem documentos e reindexa os índices com documentos. É o modo mais completo, realizando todas as etapas de manutenção. |
-| `DELETE` | Apenas exclui índices que não possuem documentos (índices "vazios"). Não realiza reindexação ou backup. |
-| `REINDEX`| Apenas reindexa índices que possuem documentos, realizando backup, exclusão e recriação dos índices. Não exclui índices vazios. |
-| `ONLY`   | Executa operações apenas nos índices especificados em um arquivo CSV fornecido pelo usuário. Ideal para manutenção seletiva. |
+| Modo      | Descrição |
+|-----------|-----------|
+| `ALL`     | Executa a exclusão de índices sem documentos e reindexa os índices com documentos. É o modo mais completo, realizando todas as etapas de manutenção. |
+| `DELETE`  | Apenas exclui índices que não possuem documentos (índices "vazios"). Não realiza reindexação ou backup. |
+| `REINDEX` | Apenas reindexa índices que possuem documentos, realizando backup, exclusão e recriação dos índices. Não exclui índices vazios. |
+| `ONLY`    | Executa operações apenas nos índices especificados em um arquivo CSV fornecido pelo usuário. Ideal para manutenção seletiva. |
+| `SEARCH`  | Lista e exibe informações detalhadas sobre os índices que correspondem ao prefixo informado, sem realizar alterações. Útil para auditoria e diagnóstico. |
 
 ### Detalhamento das Operações
 
@@ -51,6 +53,25 @@ index_name
 hcm-rs-ana-carolinacombr
 hcm-rs-grsdesacopladocombr
 hcm-rs-diovanimottacombr
+```
+
+#### SEARCH
+- Busca e lista todos os índices que correspondem ao prefixo informado.
+- Exibe informações detalhadas como nome, número de shards, réplicas, quantidade de documentos e uso de memória de cada índice.
+- Não realiza nenhuma alteração nos índices, apenas consulta e apresenta os dados.
+
+##### Exemplo de uso do modo SEARCH:
+
+```sh
+python runner.py --host http://localhost:9200 --mode SEARCH --prefix hcm-rs-*
+```
+
+Saída esperada (exemplo):
+
+```
+Index: hcm-rs-ana-carolinacombr | Shards: 1 | Réplicas: 1 | Docs: 10000 | Memória: 50.2MB
+Index: hcm-rs-grsdesacopladocombr | Shards: 1 | Réplicas: 1 | Docs: 5000 | Memória: 20.1MB
+...
 ```
 
 ## Operações Realizadas no Elasticsearch
@@ -145,7 +166,7 @@ python runner.py --host http://localhost:9200 --mode ONLY --file ./indices.csv
 | Parâmetro      | Abreviação | Descrição                                                                 | Padrão         | Exemplo | Obrigatório |
 |--------------- |-----------|--------------------------------------------------------------------------|--------------- |---------|-------------|
 | `--host`       | `-H`      | Endereço do cluster Elasticsearch                                         | -              | `--host http://localhost:9200` | Verdadeiro |
-| `--mode`       | `-m`      | Modo de operação: ALL, DELETE, REINDEX, ONLY                             | `ALL`          | `--mode REINDEX` | Falso |
+| `--mode`       | `-m`      | Modo de operação: ALL, DELETE, REINDEX, ONLY, SEARCH                             | `ALL`          | `--mode REINDEX` | Falso |
 | `--shards`     | `-s`      | Número de shards para criação de novos índices                           | `1`            | `--shards 3` | Falso |
 | `--replicas`   | `-r`      | Número de réplicas para criação de novos índices                         | `1`            | `--replicas 2` | Falso |
 | `--prefix`     | `-p`      | Prefixo dos índices a serem processados                                 | `hcm-rs-*`     | `--prefix hcm-rs-*` | Falso |

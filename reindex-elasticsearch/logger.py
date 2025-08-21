@@ -26,4 +26,8 @@ class AppLogger:
     def error(self, message):
         self.logger.error(message)
 
+    def info_with_print(self, message):
+        print(message)
+        self.info(message)
+
 log = AppLogger()

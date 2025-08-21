@@ -154,8 +154,9 @@ class Processor:
 
         log.info_with_print("-" * 100)
         log.info_with_print(f"{'TOTAL':50} {total_shards:>6} {total_replicas:>9} {total_docs:>10} {round(total_memory, 2):>14}")
-        log.info_with_print(f"Index with documents: {indexes_with_data}")
-        log.info_with_print(f"Index without documents: {indexes_without_data}")
+        log.info_with_print("-" * 100)
+        log.info_with_print(f"{'Index with documents:':50} {indexes_with_data:>6}")
+        log.info_with_print(f"{'Index without documents:':50} {indexes_without_data:>6}")
         log.info_with_print("-" * 100)
 
 if __name__ == "__main__":

@@ -70,7 +70,7 @@ Saída esperada (exemplo):
 
 ```
 ------------------------------------------------------------------------------------
-Index                         Shards      Réplicas      Documents    Memory (MB)
+Index                         Shards      Replicas      Documents    Memory (MB)
 ------------------------------------------------------------------------------------
 hcm-rs-ana-carolinacombr   | Shards: 1 | Réplicas: 1 | Docs: 10000 | Memória: 50.2MB
 hcm-rs-grsdesacopladocombr | Shards: 1 | Réplicas: 1 | Docs: 5000  | Memória: 20.1MB
@@ -203,5 +203,6 @@ Exemplo de log gerado:
 
 ## Conclusão
 Este script é uma ferramenta robusta para manutenção de índices em clusters Elasticsearch, proporcionando automação, segurança e rastreabilidade em operações críticas. Certifique-se de fornecer os argumentos corretamente e acompanhe os logs para monitorar o processamento.
+
 
 

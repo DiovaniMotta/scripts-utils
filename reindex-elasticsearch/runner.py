@@ -136,7 +136,7 @@ class Processor:
         indexes = self.client.find_index_by_name(self.prefix)
 
         log.info_with_print("-" * 100)
-        log.info_with_print(f"{'Index':50} {'Shards':>6} {'Réplicas':>9} {'Documents':>10} {'Memory (MB)':>14}")
+        log.info_with_print(f"{'Index':50} {'Shards':>6} {'Replicas':>9} {'Documents':>10} {'Memory (MB)':>14}")
         log.info_with_print("-" * 100)
 
         for entry in indexes:

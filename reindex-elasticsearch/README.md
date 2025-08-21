@@ -127,6 +127,19 @@ pip install requests dask
    - Substitua `/local/path/to/csv` pelo caminho real do arquivo CSV em seu sistema local.
    - O parâmetro `--file` é obrigatório apenas no modo `ONLY`.
 
+
+## Exemplo de Execução
+
+```sh
+python runner.py --host http://localhost:9200 --mode ALL --shards 1 --replicas 1 --prefix hcm-rs-*
+```
+
+Exemplo para o modo ONLY, utilizando um arquivo CSV:
+
+```sh
+python runner.py --host http://localhost:9200 --mode ONLY --file ./indices.csv
+```
+
 ## Parâmetros de Entrada
 
 | Parâmetro      | Abreviação | Descrição                                                                 | Padrão         | Exemplo | Obrigatório |

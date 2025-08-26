@@ -135,12 +135,12 @@ class Processor:
 
         indexes = self.client.find_index_by_name(self.prefix)
 
-        log.info_with_print("-" * 100)
-        log.info_with_print(f"{'Index':50} {'Shards':>6} {'Replicas':>9} {'Documents':>10} {'Memory (MB)':>14}")
-        log.info_with_print("-" * 100)
+        log.info("-" * 100)
+        log.info(f"{'Index':50} {'Shards':>6} {'Replicas':>9} {'Documents':>10} {'Memory (MB)':>14}")
+        log.info("-" * 100)
 
         for entry in indexes:
-            log.info_with_print(
+            log.info(
                 f"{entry['name']:50} {entry['number_of_shards']:>6} {entry['number_of_replicas']:>9} {entry['docsCount']:>10} {entry['memoryMB']:>14}")
 
             total_memory += entry['memoryMB']
@@ -152,12 +152,12 @@ class Processor:
             else:
                 indexes_without_data += 1
 
-        log.info_with_print("-" * 100)
-        log.info_with_print(f"{'TOTAL':50} {total_shards:>6} {total_replicas:>9} {total_docs:>10} {round(total_memory, 2):>14}")
-        log.info_with_print("-" * 100)
-        log.info_with_print(f"{'Index with documents:':50} {indexes_with_data:>6}")
-        log.info_with_print(f"{'Index without documents:':50} {indexes_without_data:>6}")
-        log.info_with_print("-" * 100)
+        log.info("-" * 100)
+        log.info(f"{'TOTAL':50} {total_shards:>6} {total_replicas:>9} {total_docs:>10} {round(total_memory, 2):>14}")
+        log.info("-" * 100)
+        log.info(f"{'Index with documents:':50} {indexes_with_data:>6}")
+        log.info(f"{'Index without documents:':50} {indexes_without_data:>6}")
+        log.info("-" * 100)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Script settings configuration.")

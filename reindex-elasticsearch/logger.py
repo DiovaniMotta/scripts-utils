@@ -18,16 +18,15 @@ class AppLogger:
         self.logger = logging.getLogger(__name__)
 
     def info(self, message):
-        self.logger.info(message)
+       print(message)
+       self.logger.info(message)
 
     def warn(self, message):
+        print(f"\033[38;5;208m{message}\033[0m")
         self.logger.warning(message)
 
     def error(self, message):
+        print(f"\033[91m{message}\033[0m")
         self.logger.error(message)
-
-    def info_with_print(self, message):
-        print(message)
-        self.info(message)
 
 log = AppLogger()

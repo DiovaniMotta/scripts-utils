@@ -14,7 +14,7 @@ class ElasticsearchClient:
         complete_url = f"{self.url}/{index_name}/_stats?level=shards"
         log.info(f"Executing [GET] request to API: {complete_url}")
         try:
-            response = requests.get(complete_url, auth=None)
+            response = requests.get(complete_url, auth=None, verify=False)
             response.raise_for_status()
             response_data = response.json()
             prefix_index = index_name[:-1] if index_name.endswith("*") else index_name
@@ -40,7 +40,7 @@ class ElasticsearchClient:
             }
         }
         log.info(f"Executing [PUT] request to API: {complete_url} with the parameters: {payload}")
-        response = requests.put(complete_url, json=payload, auth=None)
+        response = requests.put(complete_url, json=payload, auth=None, verify=False)
         response.raise_for_status()
         response_data = response.json()
         return response_data.get('acknowledged', False)
@@ -57,7 +57,7 @@ class ElasticsearchClient:
             }
         }
         log.info(f"Executing [POST] request to API: {complete_url} with the parameters: {payload}")
-        response = requests.post(complete_url, json=payload, auth=None)
+        response = requests.post(complete_url, json=payload, auth=None, verify=False)
         response.raise_for_status()
         response_data = response.json()
         return {
@@ -69,7 +69,7 @@ class ElasticsearchClient:
     def delete_index(self, index_name):
         complete_url = f"{self.url}/{index_name}"
         log.info(f"Executing [DELETE] request to API: {complete_url}")
-        response = requests.delete(complete_url, auth=None)
+        response = requests.delete(complete_url, auth=None, verify=False)
         response.raise_for_status()
         response_data = response.json()
         return response_data.get("acknowledged", False)

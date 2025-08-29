@@ -41,7 +41,6 @@ O script suporta os seguintes modos de operação, definidos pelo parâmetro `--
   - Exclui o índice original.
   - Recria o índice original com os parâmetros informados.
   - Replica os documentos do backup para o índice recriado.
-  - Exclui o índice de backup criado.
 
 #### ONLY
 - Lê um arquivo CSV contendo os nomes dos índices a serem processados.
@@ -70,11 +69,8 @@ python runner.py --host http://localhost:9200 --mode SEARCH --prefix hcm-rs-*
 Saída esperada (exemplo):
 
 ```
-------------------------------------------------------------------------------------
-Index                         Shards      Replicas      Documents    Memory (MB)
-------------------------------------------------------------------------------------
-hcm-rs-ana-carolinacombr   |       1 |           1 |         10000 |      50.2MB
-hcm-rs-grsdesacopladocombr |       1 |           1 |         5000  |      20.1MB
+Index: hcm-rs-ana-carolinacombr | Shards: 1 | Réplicas: 1 | Docs: 10000 | Memória: 50.2MB
+Index: hcm-rs-grsdesacopladocombr | Shards: 1 | Réplicas: 1 | Docs: 5000 | Memória: 20.1MB
 ...
 ```
 
@@ -109,9 +105,10 @@ Abaixo estão exemplos das chamadas de API realizadas pelo script:
   DELETE <host>/<index_name>
   ```
 
+
 ## Pré-requisitos
 Certifique-se de ter os seguintes requisitos instalados antes de executar o script:
-- **Python 3.12.3** ou superior
+- **Python 3.7.16** ou superior
 - **Bibliotecas necessárias:**
 
 ```sh
@@ -127,7 +124,7 @@ pip install requests dask
    Crie um arquivo chamado `Dockerfile` no mesmo diretório do seu script com o seguinte conteúdo:
 
    ```Dockerfile
-   FROM python:3.12.3-slim
+  FROM python:3.7.16-slim
    WORKDIR /app
    COPY . /app
    RUN pip install requests dask
@@ -204,9 +201,3 @@ Exemplo de log gerado:
 
 ## Conclusão
 Este script é uma ferramenta robusta para manutenção de índices em clusters Elasticsearch, proporcionando automação, segurança e rastreabilidade em operações críticas. Certifique-se de fornecer os argumentos corretamente e acompanhe os logs para monitorar o processamento.
-
-
-
-
-
-

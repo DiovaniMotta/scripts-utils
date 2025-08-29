@@ -56,8 +56,8 @@ class Processor:
 
             log.info(f'Found {len(indexes_without_documents)} indices with no documents')
             for index in indexes_without_documents:
-                log.info(f"Starting deletion for index: '{index['name']}'")
-                response = self.client.delete_index(index['name'])
+                log.info(f"Starting deletion for index: '{index["name"]}'")
+                response = self.client.delete_index(index["name"])
                 log.info(f'Has the index deletion process been completed? {response}')
             log.info('Finishing the deletion process for indices without documents.')
         except Exception as e:
@@ -76,8 +76,8 @@ class Processor:
             for index in indexes_with_documents:
                 index_name = index['name']
                 log.info(f"Starting the reindexing process for the index: '{index_name}'")
-                if (self.number_of_shards == int(index.get('number_of_shards', 0))
-                    and self.number_of_replicas == int(index.get('number_of_replicas', 0))
+                if (self.number_of_shards == int(index.get("number_of_shards", 0))
+                    and self.number_of_replicas == int(index.get("number_of_replicas", 0))
                 ):
                     log.warn(
                         f"Index '{index_name}' reindexing is unnecessary because "
@@ -100,7 +100,7 @@ class Processor:
                 log.info(f"Has the index '{index_name}' been created? {response}")
                 log.info(f"Replicating documents from index '{backup_index_name}' to index '{index_name}'")
                 status = self.client.replicate_data_from_index(backup_index_name, index_name)
-                log.info(f"Reindexed {status['reindex']['documents']} documents")
+                log.info(f"Reindexed {status["reindex"]["documents"]} documents")
                 log.info(f"Deleted index '{backup_index_name}'")
                 response = self.client.delete_index(backup_index_name)
                 log.info(f"Has the index '{backup_index_name}' deletion process been completed? {response}")
@@ -116,8 +116,8 @@ class Processor:
             data_set = Reader.read_csv(self.file_path)
             log.info(f'Amount of objects read from CSV file: {data_set.shape[0]}')
             for _, row in data_set.iterrows():
-                log.info(f'Starting process for index: {row['index_name']}')
-                indexes = self.client.find_index_by_name(row['index_name'])
+                log.info(f'Starting process for index: {row["index_name"]}')
+                indexes = self.client.find_index_by_name(row["index_name"])
                 self.delete(indexes)
                 self.reindex(indexes)
             log.info('Finishing cluster maintenance process for specific indices...')
@@ -141,13 +141,13 @@ class Processor:
 
         for entry in indexes:
             log.info(
-                f"{entry['name']:50} {entry['number_of_shards']:>6} {entry['number_of_replicas']:>9} {entry['docsCount']:>10} {entry['memoryMB']:>14}")
+                f"{entry["name"]:50} {entry["number_of_shards"]:>6} {entry["number_of_replicas"]:>9} {entry["docsCount"]:>10} {entry["memoryMB"]:>14}")
 
-            total_memory += entry['memoryMB']
-            total_docs += entry['docsCount']
-            total_shards += entry['number_of_shards']
-            total_replicas += entry['number_of_replicas']
-            if entry['docsCount'] > 0:
+            total_memory += entry["memoryMB"]
+            total_docs += entry["docsCount"]
+            total_shards += entry["number_of_shards"]
+            total_replicas += entry["number_of_replicas"]
+            if entry["docsCount"] > 0:
                 indexes_with_data += 1
             else:
                 indexes_without_data += 1

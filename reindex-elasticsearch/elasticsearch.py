@@ -84,12 +84,13 @@ class ElasticsearchClient:
             response.raise_for_status()
             response_data = response.json()
 
+            completed = response_data.get("completed", False)
             status = response_data.get("task", {}).get("status", {})
             created = status.get("created", 0)
             total = status.get("total", 1)
 
             log.info(f"Progress: {created}/{total} documents reindexed...")
-            if response_data.get("completed", False):
+            if completed:
                 log.info(f"Task '{task}' has been completed")
                 return  {
                     'reindex': {

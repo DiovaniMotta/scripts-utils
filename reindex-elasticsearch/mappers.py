@@ -2,27 +2,26 @@
 class Mapper:
 
     @staticmethod
-    def map_to_index(response_data, prefix_index):
+    def map_to_index(data_stats, data_settings, prefix_index):
         summary = {}
 
-        for index_name, index_data in response_data.get("indices", {}).items():
+        for index_name, index_data in data_stats.get("indices", {}).items():
             if index_name.startswith(prefix_index):
-                shards = index_data.get("shards", {})
                 docs_count = index_data.get("primaries", {}).get("docs", {}).get("count", 0)
-                replicas = int(
-                    index_data.get(index_name, {}).get("settings", {}).get("index", {}).get("number_of_replicas", 0))
+                number_of_shards = int(data_settings.get(index_name, {}).get("settings", {}).get("index", {}).get("number_of_shards", 0))
+                number_of_replicas = int(data_settings.get(index_name, {}).get("settings", {}).get("index", {}).get("number_of_replicas", 0))
 
                 if index_name not in summary:
                     summary[index_name] = {
-                        "shardCount": 0,
+                        "shardCount": number_of_shards,
                         "memoryBytes": 0,
                         "docsCount": docs_count,
-                        "replicas": replicas
+                        "replicas": number_of_replicas
                     }
 
+                shards = index_data.get("shards", {})
                 for shard_array in shards.values():
                     for shard in shard_array:
-                        summary[index_name]["shardCount"] += 1
                         summary[index_name]["memoryBytes"] += shard.get("segments", {}).get("memory_in_bytes", 0)
         results = [
             {

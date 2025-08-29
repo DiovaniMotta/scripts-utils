@@ -17,9 +17,12 @@ class ElasticsearchClient:
         try:
             response = requests.get(complete_url, auth=None, verify=False)
             response.raise_for_status()
-            response_data = response.json()
+            data_stats = response.json()
+
+            settings_data = self.__find_settings(index_name)
+
             prefix_index = index_name[:-1] if index_name.endswith("*") else index_name
-            return Mapper.map_to_index(response_data, prefix_index)
+            return Mapper.map_to_index(data_stats, settings_data, prefix_index)
 
         except requests.exceptions.HTTPError as e:
             if response.status_code == 404:
@@ -27,9 +30,11 @@ class ElasticsearchClient:
                 return []
             else:
                 log.error(f"HTTP error while accessing {complete_url}: {e}")
+                log.error(e.print_exc())
                 raise
         except requests.exceptions.RequestException as e:
             log.error(f"Request error while accessing {complete_url}: {e}")
+            log.error(e.print_exc())
             raise
 
     def create_index(self, index_name):
@@ -99,3 +104,11 @@ class ElasticsearchClient:
                 }
             else:
                 time.sleep(5)
+
+    def __find_settings(self, index_name):
+        complete_url = f"{self.url}/{index_name}/_settings"
+        log.info(f"Executing [GET] request to API: {complete_url}")
+        response = requests.get(complete_url, auth=None, verify=False)
+        response.raise_for_status()
+        return response.json()
+

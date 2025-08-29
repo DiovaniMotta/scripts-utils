@@ -84,6 +84,10 @@ Abaixo estão exemplos das chamadas de API realizadas pelo script:
   ```http
   GET <host>/<prefix>/_stats?level=shards
   ```
+- **Buscar configurações dos índices:**
+  ```http
+  GET <host>/<prefix>/_settings
+  ```
 - **Criar índice:**
   ```http
   PUT <host>/<index_name>

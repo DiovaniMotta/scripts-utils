@@ -38,9 +38,11 @@ O script suporta os seguintes modos de operação, definidos pelo parâmetro `--
 - Para cada índice com documentos:
   - Cria um índice de backup (`backup-<index_name>`).
   - Replica os documentos do índice original para o backup.
+    - **A reindexação é executada de forma assíncrona. O script dispara a tarefa de reindexação e, a cada 5 segundos, consulta automaticamente o status da tarefa no Elasticsearch até a conclusão.**
   - Exclui o índice original.
   - Recria o índice original com os parâmetros informados.
   - Replica os documentos do backup para o índice recriado.
+    - **A reindexação do backup para o índice recriado também é feita de forma assíncrona, com consulta do status a cada 5 segundos.**
 
 #### ONLY
 - Lê um arquivo CSV contendo os nomes dos índices a serem processados.
@@ -92,14 +94,19 @@ Abaixo estão exemplos das chamadas de API realizadas pelo script:
     }
   }
   ```
-- **Reindexar documentos:**
+- **Reindexar documentos (assíncrono):**
   ```http
-  POST <host>/_reindex
+  POST <host>/_reindex?wait_for_completion=false
   {
     "source": { "index": "<index_name_origin>" },
     "dest": { "index": "<index_name_destination>" }
   }
   ```
+  - O Elasticsearch retorna um campo `task` que identifica a tarefa de reindexação.
+  - O script consulta o status da tarefa a cada 5 segundos até a conclusão:
+    ```http
+    GET <host>/_tasks/<task_id>
+    ```
 - **Excluir índice:**
   ```http
   DELETE <host>/<index_name>

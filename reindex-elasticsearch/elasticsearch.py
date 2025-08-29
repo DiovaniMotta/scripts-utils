@@ -1,4 +1,5 @@
 import requests
+import time
 
 from mappers import Mapper
 from logger import log
@@ -47,7 +48,7 @@ class ElasticsearchClient:
 
 
     def replicate_data_from_index(self, index_name_origin, index_name_destination):
-        complete_url = f"{self.url}/_reindex"
+        complete_url = f"{self.url}/_reindex?wait_for_completion=false"
         payload = {
             'source': {
                 'index': index_name_origin
@@ -60,11 +61,9 @@ class ElasticsearchClient:
         response = requests.post(complete_url, json=payload, auth=None, verify=False)
         response.raise_for_status()
         response_data = response.json()
-        return {
-            'reindex': {
-                'documents': response_data.get('total', 0)
-            }
-        }
+        task = response_data.get("task")
+        log.info(f"Asynchronous reindexing request was successfully accepted. Task created: '{task}'")
+        return self.__search_task_status(task)
 
     def delete_index(self, index_name):
         complete_url = f"{self.url}/{index_name}"
@@ -74,4 +73,28 @@ class ElasticsearchClient:
         response_data = response.json()
         return response_data.get("acknowledged", False)
 
+    def __search_task_status(self, task):
+        complete_url = f"{self.url}/_tasks/{task}"
+        payload = {
+            'task': task
+        }
+        log.info(f"Executing [GET] request to API: {complete_url} with the parameters: {payload}")
+        while True:
+            response = requests.get(complete_url, json=payload,auth=None, verify=False)
+            response.raise_for_status()
+            response_data = response.json()
 
+            status = response_data.get("task", {}).get("status", {})
+            created = status.get("created", 0)
+            total = status.get("total", 1)
+
+            log.info(f"Progress: {created}/{total} documents reindexed...")
+            if response_data.get("completed", False):
+                log.info(f"Task '{task}' has been completed")
+                return  {
+                    'reindex': {
+                        'documents': total
+                    }
+                }
+            else:
+                time.sleep(5)

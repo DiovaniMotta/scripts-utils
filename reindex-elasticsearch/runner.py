@@ -56,7 +56,7 @@ class Processor:
 
             log.info(f'Found {len(indexes_without_documents)} indices with no documents')
             for index in indexes_without_documents:
-                log.info(f"Starting deletion for index: '{index["name"]}'")
+                log.info("Starting deletion for index: '{}'".format(index["name"]))
                 response = self.client.delete_index(index["name"])
                 log.info(f'Has the index deletion process been completed? {response}')
             log.info('Finishing the deletion process for indices without documents.')
@@ -74,7 +74,7 @@ class Processor:
 
             log.info(f'Found {len(indexes_with_documents)} indices with documents')
             for index in indexes_with_documents:
-                index_name = index['name']
+                index_name = index["name"]
                 log.info(f"Starting the reindexing process for the index: '{index_name}'")
                 if (self.number_of_shards == int(index.get("number_of_shards", 0))
                     and self.number_of_replicas == int(index.get("number_of_replicas", 0))
@@ -100,7 +100,7 @@ class Processor:
                 log.info(f"Has the index '{index_name}' been created? {response}")
                 log.info(f"Replicating documents from index '{backup_index_name}' to index '{index_name}'")
                 status = self.client.replicate_data_from_index(backup_index_name, index_name)
-                log.info(f"Reindexed {status["reindex"]["documents"]} documents")
+                log.info(f"Reindexed {status['reindex']['documents']} documents")
                 log.info(f"Deleted index '{backup_index_name}'")
                 response = self.client.delete_index(backup_index_name)
                 log.info(f"Has the index '{backup_index_name}' deletion process been completed? {response}")
@@ -140,8 +140,7 @@ class Processor:
         log.info("-" * 100)
 
         for entry in indexes:
-            log.info(
-                f"{entry["name"]:50} {entry["number_of_shards"]:>6} {entry["number_of_replicas"]:>9} {entry["docsCount"]:>10} {entry["memoryMB"]:>14}")
+            log.info(f"{entry['name']:50} {entry['number_of_shards']:<6} {entry['number_of_replicas']:<9} {entry['docsCount']:<10} {entry['memoryMB']:<14}")
 
             total_memory += entry["memoryMB"]
             total_docs += entry["docsCount"]

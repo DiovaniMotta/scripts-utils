@@ -43,6 +43,7 @@ O script suporta os seguintes modos de operação, definidos pelo parâmetro `--
   - Recria o índice original com os parâmetros informados.
   - Replica os documentos do backup para o índice recriado.
     - **A reindexação do backup para o índice recriado também é feita de forma assíncrona, com consulta do status a cada 5 segundos.**
+  - Exclui o índice backup.  
 
 #### ONLY
 - Lê um arquivo CSV contendo os nomes dos índices a serem processados.
@@ -212,4 +213,5 @@ Exemplo de log gerado:
 
 ## Conclusão
 Este script é uma ferramenta robusta para manutenção de índices em clusters Elasticsearch, proporcionando automação, segurança e rastreabilidade em operações críticas. Certifique-se de fornecer os argumentos corretamente e acompanhe os logs para monitorar o processamento.
+
 

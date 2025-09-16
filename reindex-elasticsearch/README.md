@@ -163,27 +163,22 @@ python runner.py --host http://localhost:9200 --mode REINDEX --analysis_file_set
 
 ## Conceitos Fundamentais do Elasticsearch
 
-### Índice
 Um **índice** no Elasticsearch é uma coleção de documentos que possuem características similares. É equivalente a uma base de dados em sistemas relacionais. Cada índice é identificado por um nome único e é usado para armazenar, pesquisar e recuperar documentos.
 
-### Shards
 **Shards** são subdivisões de um índice que permitem distribuir os dados horizontalmente. Cada shard é um índice Lucene independente e funcional. Os shards permitem:
 - Distribuir o volume de dados quando excede a capacidade de um único nó
 - Paralelizar operações de busca e indexação, melhorando a performance
 - Escalar horizontalmente o cluster
 
-### Réplicas
 **Réplicas** são cópias dos shards primários que fornecem redundância e disponibilidade. Benefícios das réplicas:
 - **Alta disponibilidade**: Se um nó falhar, as réplicas garantem que os dados permaneçam disponíveis
 - **Performance de busca**: As consultas podem ser executadas em paralelo nos shards primários e réplicas
 - **Tolerância a falhas**: Proteção contra perda de dados
 
-### Max Result Window
 **Max Result Window** define o número máximo de documentos que podem ser retornados em uma única consulta paginada (usando `from` + `size`). O valor padrão é 10.000, mas pode ser ajustado conforme necessário:
 - Valores muito altos podem impactar a performance e o uso de memória
 - É importante balancear entre funcionalidade e performance do cluster
 
-### Analisadores
 **Analisadores** são responsáveis por processar o texto durante a indexação e busca. Eles definem como o texto é:
 - **Dividido em tokens** (tokenização)
 - **Normalizado** (lowercase, remoção de acentos, etc.)
@@ -191,7 +186,6 @@ Um **índice** no Elasticsearch é uma coleção de documentos que possuem carac
 
 Os analisadores personalizados permitem otimizar a busca para casos específicos de uso.
 
-### Mapeamentos
 **Mapeamentos** definem como os documentos e seus campos são armazenados e indexados. Especificam:
 - **Tipos de dados** dos campos (text, keyword, date, integer, etc.)
 - **Configurações de análise** para campos de texto
@@ -366,6 +360,7 @@ Exemplo de log gerado:
 
 ## Conclusão
 Este script é uma ferramenta robusta para manutenção de índices em clusters Elasticsearch, proporcionando automação, segurança e rastreabilidade em operações críticas. Certifique-se de fornecer os argumentos corretamente e acompanhe os logs para monitorar o processamento.
+
 
 
 

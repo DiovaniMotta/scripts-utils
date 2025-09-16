@@ -2,7 +2,7 @@
 class Mapper:
 
     @staticmethod
-    def map_to_index(data_stats, data_settings, prefix_index):
+    def map_to_index(data_stats, data_settings, mappings, prefix_index):
         summary = {}
 
         for index_name, index_data in data_stats.get("indices", {}).items():
@@ -29,9 +29,30 @@ class Mapper:
                 "number_of_shards": stats["shardCount"],
                 "number_of_replicas": stats["replicas"],
                 "docsCount": stats["docsCount"],
-                "memoryMB": round(stats["memoryBytes"] / 1048576, 2)
+                "memoryMB": round(stats["memoryBytes"] / 1048576, 2),
+                "analysis": data_settings.get(name, {}).get("settings", {}).get("index", {}).get("analysis", {}),
+                "mappings": mappings.get(name, {}).get('mappings', {})
             }
             for name, stats in summary.items()
         ]
         results.sort(key=lambda x: x["memoryMB"], reverse=True)
         return results
+
+    @staticmethod
+    def map_to_settings(configs):
+        settings = {
+            "index_name": configs.get('index_name')
+        }
+
+        if configs['analysis']['file']:
+            settings["analysis"] = configs["analysis"]["file"]
+        elif configs['analysis']['index']:
+            settings["analysis"] = configs["analysis"]["index"]
+
+        if configs['mappings']['file']:
+            settings["mappings"] = configs["mappings"]["file"]
+        elif configs['mappings']['index']:
+            settings["mappings"] = configs["mappings"]["index"]
+
+        return settings
+

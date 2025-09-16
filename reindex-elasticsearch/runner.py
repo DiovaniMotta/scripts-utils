@@ -4,10 +4,13 @@ from logger import log
 from reader import Reader
 from elasticsearch import ElasticsearchClient
 from file import FileValidator
+from mappers import Mapper
 
 class Processor:
 
     def __init__(self, configs):
+        self.analysis = None
+        self.mappings = None
         self.client = ElasticsearchClient(configs)
         self.mode = configs.mode
         self.prefix = configs.prefix
@@ -15,6 +18,9 @@ class Processor:
         self.number_of_replicas = configs.replicas
         self.file_path = configs.file
         self.host = configs.host
+        self.analysis_file_settings = configs.analysis_file_settings
+        self.mappings_file_settings = configs.mappings_file_settings
+        self.ignore_validations = configs.ignore
 
     def execute(self):
         try:
@@ -28,22 +34,45 @@ class Processor:
             if self.file_path:
                 log.info(f"   Data file path: {self.file_path}")
 
+            if self.analysis_file_settings:
+                log.info(f"   Analysis file path: {self.analysis_file_settings}")
+                self.analysis = Reader.read_json(self.analysis_file_settings, 'analysis')
+
+            if self.mappings_file_settings:
+                log.info(f"   Mapping file path: {self.mappings_file_settings}")
+                self.mappings = Reader.read_json(self.mappings_file_settings, 'mappings')
+
             if self.mode == 'DELETE':
                 indexes = self.client.find_index_by_name(self.prefix)
                 self.delete(indexes)
+
+
+            bulk = {
+                "analysis": self.analysis,
+                "mappings": self.mappings,
+                "indexes": None
+            }
+
             if self.mode == 'REINDEX':
                 indexes = self.client.find_index_by_name(self.prefix)
-                self.reindex(indexes)
+                bulk["indexes"] = indexes
+                self.reindex(bulk)
+
             if self.mode == 'ALL':
                 indexes = self.client.find_index_by_name(self.prefix)
+                bulk["indexes"] = indexes
                 self.delete(indexes)
-                self.reindex(indexes)
+                self.reindex(bulk)
+
             if self.mode == 'ONLY':
                 self.process_only_indexes()
+
             if self.mode == 'SEARCH':
                 self.report()
+
         except Exception as e:
             log.error(f"An error occurred while executing the cluster maintenance routine : {e}")
+            log.error(e.print_exc())
             return None
 
     def delete(self, indexes):
@@ -64,10 +93,10 @@ class Processor:
             log.error(f"An error occurred while executing the index deletion : {e}")
             return None
 
-    def reindex(self, indexes):
+    def reindex(self, bulk):
         try:
             log.info('Starting the reindexing process for indices with documents.')
-            indexes_with_documents = [index for index in indexes if index["docsCount"] > 0]
+            indexes_with_documents = [index for index in bulk.get('indexes', []) if index["docsCount"] > 0]
             if len(indexes_with_documents) == 0:
                 log.warn('There are no indices with documents to be reindexed.')
                 return
@@ -76,18 +105,31 @@ class Processor:
             for index in indexes_with_documents:
                 index_name = index["name"]
                 log.info(f"Starting the reindexing process for the index: '{index_name}'")
-                if (self.number_of_shards == int(index.get("number_of_shards", 0))
-                    and self.number_of_replicas == int(index.get("number_of_replicas", 0))
-                ):
-                    log.warn(
-                        f"Index '{index_name}' reindexing is unnecessary because "
-                        f"the settings (Shards: {self.number_of_shards} and "
-                        f"Replicas: {self.number_of_replicas}) are already applied."
-                    )
-                    continue
+                if not self.ignore_validations:
+                    if (self.number_of_shards == int(index.get("number_of_shards", 0))
+                        and self.number_of_replicas == int(index.get("number_of_replicas", 0))
+                    ):
+                        log.warn(
+                            f"Index '{index_name}' reindexing is unnecessary because "
+                            f"the settings (Shards: {self.number_of_shards} and "
+                            f"Replicas: {self.number_of_replicas}) are already applied."
+                        )
+                        continue
                 backup_index_name = f'backup-{index_name}'
                 log.info(f"Creating index '{backup_index_name}' for document backup")
-                response = self.client.create_index(backup_index_name)
+                configs = {
+                    'index_name': backup_index_name,
+                    'analysis': {
+                        'index': index.get("analysis", {}),
+                        'file': self.analysis
+                    },
+                    'mappings': {
+                        'index': index.get("mappings", {}),
+                        'file': self.mappings
+                    }
+                }
+                settings = Mapper.map_to_settings(configs)
+                response = self.client.create_index(settings)
                 log.info(f"Has the index '{backup_index_name}' been created? {response}")
                 log.info(f"Replicating documents from index '{index_name}' to index '{backup_index_name}'")
                 status = self.client.replicate_data_from_index(index_name, backup_index_name)
@@ -96,7 +138,8 @@ class Processor:
                 response = self.client.delete_index(index_name)
                 log.info(f"Has the index '{index_name}' deletion process been completed? {response}")
                 log.info(f"Rebuilding index '{index_name}' with parameters: [Number of shards: {self.number_of_shards}, Number of replicas:{self.number_of_replicas}]")
-                response = self.client.create_index(index_name)
+                settings['index_name'] = index_name
+                response = self.client.create_index(settings)
                 log.info(f"Has the index '{index_name}' been created? {response}")
                 log.info(f"Replicating documents from index '{backup_index_name}' to index '{index_name}'")
                 status = self.client.replicate_data_from_index(backup_index_name, index_name)
@@ -119,7 +162,12 @@ class Processor:
                 log.info(f'Starting process for index: {row["index_name"]}')
                 indexes = self.client.find_index_by_name(row["index_name"])
                 self.delete(indexes)
-                self.reindex(indexes)
+                bulk = {
+                    "analysis": self.analysis,
+                    "mappings": self.mappings,
+                    "indexes": indexes
+                }
+                self.reindex(bulk)
             log.info('Finishing cluster maintenance process for specific indices...')
         except Exception as e:
             log.error(f"An error occurred while performing maintenance for specific indices : {e}")
@@ -186,6 +234,18 @@ if __name__ == "__main__":
         help="Enter the number of replicas. (default: 1)"
     )
     parser.add_argument(
+        "-w", "--max_result_window",
+        type=int,
+        default=1000000,
+        help="Maximum number of records that can be loaded in a paginated query (default: 1000000)"
+    )
+    parser.add_argument(
+        "-i", "--ignore",
+        action="store_true",
+        default=False,
+        help="Ignores any checks during the reindexing process"
+    )
+    parser.add_argument(
         "-p", "--prefix",
         type=str,
         default='hcm-rs-*',
@@ -197,11 +257,26 @@ if __name__ == "__main__":
         required=False,
         help="CSV file containing the indices to process (required if operation mode is ONLY)"
     )
+    parser.add_argument(
+        "-a", "--analysis_file_settings",
+        type=lambda f: FileValidator.allow_extension(f, extensions=[".json"]),
+        required=False,
+        help="JSON file with the custom analyzer configuration of the index"
+    )
+    parser.add_argument(
+        "-x", "--mappings_file_settings",
+        type=lambda f: FileValidator.allow_extension(f, extensions=[".json"]),
+        required=False,
+        help="JSON file with the data mapping definition for the indices"
+    )
 
     args = parser.parse_args()
     if args.mode == "ONLY" and not args.file:
         parser.error("--file is required when mode is ONLY")
     if args.mode != "ONLY":
         args.file = None
+    if args.mode not in ('REINDEX', 'ONLY'):
+        args.analysis_file_settings = None
+        args.mappings_file_settings = None
     processor = Processor(args)
     processor.execute()

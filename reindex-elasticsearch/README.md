@@ -43,7 +43,6 @@ O script suporta os seguintes modos de operação, definidos pelo parâmetro `--
   - Recria o índice original com os parâmetros informados.
   - Replica os documentos do backup para o índice recriado.
     - **A reindexação do backup para o índice recriado também é feita de forma assíncrona, com consulta do status a cada 5 segundos.**
-  - Exclui o índice backup.  
 
 #### ONLY
 - Lê um arquivo CSV contendo os nomes dos índices a serem processados.
@@ -77,6 +76,130 @@ Index: hcm-rs-grsdesacopladocombr | Shards: 1 | Réplicas: 1 | Docs: 5000 | Mem�
 ...
 ```
 
+## Configuração de Analisadores e Mapeamentos Personalizados
+
+O script permite a configuração de analisadores customizados e mapeamentos de dados através de arquivos JSON externos. Esta funcionalidade está disponível nos modos `REINDEX` e `ONLY`.
+
+### Ordem de Prioridade
+
+1. **Arquivos JSON externos** (maior prioridade) - Quando especificados via parâmetros `--analysis_file_settings` e `--mappings_file_settings`
+2. **Configuração atual do índice** (menor prioridade) - Extraída automaticamente do índice existente
+
+### Arquivos de Configuração
+
+#### Arquivo de Analisadores (`analysis.json`)
+
+Define analisadores customizados para processamento de texto. O arquivo pode estar localizado em qualquer diretório. Exemplo de estrutura:
+
+```json
+{
+   "analysis": {
+      "normalizer": {
+         "text_normalizer": {
+            "filter": [
+               "lowercase",
+               "asciifolding"
+            ],
+            "type": "custom",
+            "char_filter": []
+         }
+      }
+   }
+}
+```
+
+#### Arquivo de Mapeamentos (`mappings.json`)
+
+Define a estrutura e tipos de dados dos campos do índice. O arquivo pode estar localizado em qualquer diretório. Exemplo de estrutura:
+
+```json
+{
+   "mappings": {
+      "candidate": {
+         "properties": {
+            "attachment": {
+               "type": "text"
+            },
+            "birthday": {
+               "type": "date"
+            },
+            "branchOffice": {
+               "type": "text"
+            },
+            "companies": {
+               "properties": {
+                  "id": {
+                     "type": "text",
+                     "fields": {
+                        "keyword": {
+                           "type": "keyword",
+                           "ignore_above": 256
+                        }
+                     }
+                  },
+                  "name": {
+                     "type": "text"
+                  }
+               }
+            }
+         }
+      }
+   }
+}
+```
+
+### Exemplos de Uso
+
+```sh
+# Reindexação com analisadores personalizados
+python runner.py --host http://localhost:9200 --mode REINDEX --analysis_file_settings /path/to/analysis.json
+
+# Reindexação com mapeamentos personalizados
+python runner.py --host http://localhost:9200 --mode REINDEX --mappings_file_settings /path/to/mappings.json
+
+# Reindexação com ambos (analisadores e mapeamentos)
+python runner.py --host http://localhost:9200 --mode REINDEX --analysis_file_settings /path/to/analysis.json --mappings_file_settings /path/to/mappings.json
+```
+
+## Conceitos Fundamentais do Elasticsearch
+
+### Índice
+Um **índice** no Elasticsearch é uma coleção de documentos que possuem características similares. É equivalente a uma base de dados em sistemas relacionais. Cada índice é identificado por um nome único e é usado para armazenar, pesquisar e recuperar documentos.
+
+### Shards
+**Shards** são subdivisões de um índice que permitem distribuir os dados horizontalmente. Cada shard é um índice Lucene independente e funcional. Os shards permitem:
+- Distribuir o volume de dados quando excede a capacidade de um único nó
+- Paralelizar operações de busca e indexação, melhorando a performance
+- Escalar horizontalmente o cluster
+
+### Réplicas
+**Réplicas** são cópias dos shards primários que fornecem redundância e disponibilidade. Benefícios das réplicas:
+- **Alta disponibilidade**: Se um nó falhar, as réplicas garantem que os dados permaneçam disponíveis
+- **Performance de busca**: As consultas podem ser executadas em paralelo nos shards primários e réplicas
+- **Tolerância a falhas**: Proteção contra perda de dados
+
+### Max Result Window
+**Max Result Window** define o número máximo de documentos que podem ser retornados em uma única consulta paginada (usando `from` + `size`). O valor padrão é 10.000, mas pode ser ajustado conforme necessário:
+- Valores muito altos podem impactar a performance e o uso de memória
+- É importante balancear entre funcionalidade e performance do cluster
+
+### Analisadores
+**Analisadores** são responsáveis por processar o texto durante a indexação e busca. Eles definem como o texto é:
+- **Dividido em tokens** (tokenização)
+- **Normalizado** (lowercase, remoção de acentos, etc.)
+- **Filtrado** (remoção de stop words, stemming, etc.)
+
+Os analisadores personalizados permitem otimizar a busca para casos específicos de uso.
+
+### Mapeamentos
+**Mapeamentos** definem como os documentos e seus campos são armazenados e indexados. Especificam:
+- **Tipos de dados** dos campos (text, keyword, date, integer, etc.)
+- **Configurações de análise** para campos de texto
+- **Propriedades especiais** como `ignore_above`, `index`, `store`
+- **Campos aninhados** e suas estruturas
+
+Os mapeamentos são fundamentais para garantir que os dados sejam indexados corretamente e as buscas funcionem como esperado.
+
 ## Operações Realizadas no Elasticsearch
 
 Abaixo estão exemplos das chamadas de API realizadas pelo script:
@@ -89,14 +212,21 @@ Abaixo estão exemplos das chamadas de API realizadas pelo script:
   ```http
   GET <host>/<prefix>/_settings
   ```
+- **Buscar mapeamentos dos índices:**
+  ```http
+  GET <host>/<prefix>/_mapping?pretty
+  ```
 - **Criar índice:**
   ```http
   PUT <host>/<index_name>
   {
     "settings": {
       "number_of_shards": <shards>,
-      "number_of_replicas": <replicas>
-    }
+      "number_of_replicas": <replicas>,
+      "max_result_window": <max_result_window>,
+      "analysis": { ... }
+    },
+    "mappings": { ... }
   }
   ```
 - **Reindexar documentos (assíncrono):**
@@ -136,7 +266,7 @@ pip install requests dask
    Crie um arquivo chamado `Dockerfile` no mesmo diretório do seu script com o seguinte conteúdo:
 
    ```Dockerfile
-   FROM python:3.7.16-slim
+  FROM python:3.7.16-slim
    WORKDIR /app
    COPY . /app
    RUN pip install requests dask
@@ -165,27 +295,50 @@ pip install requests dask
 ## Exemplo de Execução
 
 ```sh
+# Execução básica com todos os modos
 python runner.py --host http://localhost:9200 --mode ALL --shards 1 --replicas 1 --prefix hcm-rs-*
+
+# Execução com configuração de max_result_window
+python runner.py --host http://localhost:9200 --mode REINDEX --max_result_window 5000000
+
+# Execução ignorando validações
+python runner.py --host http://localhost:9200 --mode REINDEX --ignore
+
+# Execução com analisadores e mapeamentos personalizados
+python runner.py --host http://localhost:9200 --mode REINDEX \
+  --analysis_file_settings /path/to/analysis.json \
+  --mappings_file_settings /path/to/mappings.json
 ```
 
 Exemplo para o modo ONLY, utilizando um arquivo CSV:
 
 ```sh
 python runner.py --host http://localhost:9200 --mode ONLY --file ./indices.csv
+
+# Modo ONLY com configurações personalizadas
+python runner.py --host http://localhost:9200 --mode ONLY \
+  --file ./indices.csv \
+  --analysis_file_settings /path/to/analysis.json \
+  --mappings_file_settings /path/to/mappings.json
 ```
 
 ## Parâmetros de Entrada
 
-| Parâmetro      | Abreviação | Descrição                                                                 | Padrão         | Exemplo | Obrigatório |
-|--------------- |-----------|--------------------------------------------------------------------------|--------------- |---------|-------------|
-| `--host`       | `-H`      | Endereço do cluster Elasticsearch                                         | -              | `--host http://localhost:9200` | Verdadeiro |
-| `--mode`       | `-m`      | Modo de operação: ALL, DELETE, REINDEX, ONLY, SEARCH                             | `ALL`          | `--mode REINDEX` | Falso |
-| `--shards`     | `-s`      | Número de shards para criação de novos índices                           | `1`            | `--shards 3` | Falso |
-| `--replicas`   | `-r`      | Número de réplicas para criação de novos índices                         | `1`            | `--replicas 2` | Falso |
-| `--prefix`     | `-p`      | Prefixo dos índices a serem processados                                 | `hcm-rs-*`     | `--prefix hcm-rs-*` | Falso |
-| `--file`       | `-f`      | Caminho para o arquivo CSV com índices (obrigatório no modo ONLY)        | -              | `--file /app/indices.csv` | Falso* |
+| Parâmetro                  | Abreviação | Descrição                                                                 | Padrão         | Exemplo | Obrigatório |
+|---------------------------|-----------|--------------------------------------------------------------------------|--------------- |---------|-------------|
+| `--host`                  | `-H`      | Endereço do cluster Elasticsearch                                         | -              | `--host http://localhost:9200` | Verdadeiro |
+| `--mode`                  | `-m`      | Modo de operação: ALL, DELETE, REINDEX, ONLY, SEARCH                             | `ALL`          | `--mode REINDEX` | Falso |
+| `--shards`                | `-s`      | Número de shards para criação de novos índices                           | `1`            | `--shards 3` | Falso |
+| `--replicas`              | `-r`      | Número de réplicas para criação de novos índices                         | `1`            | `--replicas 2` | Falso |
+| `--max_result_window`     | `-w`      | Número máximo de registros que podem ser carregados em uma consulta paginada | `1000000`      | `--max_result_window 5000000` | Falso |
+| `--ignore`                | `-i`      | Ignora validações durante o processo de reindexação                      | `False`        | `--ignore` | Falso |
+| `--prefix`                | `-p`      | Prefixo dos índices a serem processados                                 | `hcm-rs-*`     | `--prefix hcm-rs-*` | Falso |
+| `--file`                  | `-f`      | Caminho para o arquivo CSV com índices (obrigatório no modo ONLY)        | -              | `--file /app/indices.csv` | Falso* |
+| `--analysis_file_settings` | `-a`      | Arquivo JSON com configuração de analisadores customizados              | -              | `--analysis_file_settings /path/to/analysis.json` | Falso** |
+| `--mappings_file_settings` | `-x`      | Arquivo JSON com definição de mapeamento de dados dos índices           | -              | `--mappings_file_settings /path/to/mappings.json` | Falso** |
 
-*Obrigatório apenas se o modo selecionado for `ONLY`.
+*Obrigatório apenas se o modo selecionado for `ONLY`.  
+**Disponível apenas nos modos `REINDEX` e `ONLY`.
 
 ## Rastreabilidade e Logs
 
@@ -213,5 +366,3 @@ Exemplo de log gerado:
 
 ## Conclusão
 Este script é uma ferramenta robusta para manutenção de índices em clusters Elasticsearch, proporcionando automação, segurança e rastreabilidade em operações críticas. Certifique-se de fornecer os argumentos corretamente e acompanhe os logs para monitorar o processamento.
-
-

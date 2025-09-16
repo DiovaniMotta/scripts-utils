@@ -266,7 +266,7 @@ pip install requests dask
    Crie um arquivo chamado `Dockerfile` no mesmo diretório do seu script com o seguinte conteúdo:
 
    ```Dockerfile
-  FROM python:3.7.16-slim
+   FROM python:3.7.16-slim
    WORKDIR /app
    COPY . /app
    RUN pip install requests dask
@@ -366,3 +366,4 @@ Exemplo de log gerado:
 
 ## Conclusão
 Este script é uma ferramenta robusta para manutenção de índices em clusters Elasticsearch, proporcionando automação, segurança e rastreabilidade em operações críticas. Certifique-se de fornecer os argumentos corretamente e acompanhe os logs para monitorar o processamento.
+

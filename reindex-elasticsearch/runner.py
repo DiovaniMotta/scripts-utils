@@ -18,6 +18,7 @@ class Processor:
         self.number_of_replicas = configs.replicas
         self.file_path = configs.file
         self.host = configs.host
+        self.max_result_window = configs.max_result_window
         self.analysis_file_settings = configs.analysis_file_settings
         self.mappings_file_settings = configs.mappings_file_settings
         self.ignore_validations = configs.ignore
@@ -30,7 +31,10 @@ class Processor:
             log.info(f"   Operation mode: {self.mode}")
             log.info(f"   Number of shards: {self.number_of_shards}")
             log.info(f"   Number of replicas: {self.number_of_replicas}")
+            log.info(f"   Max Result Window: {self.max_result_window}")
             log.info(f"   Prefix of the analyzed indices: {self.prefix}")
+            log.info(f"   Ignore validations: {self.ignore_validations}")
+
             if self.file_path:
                 log.info(f"   Data file path: {self.file_path}")
 

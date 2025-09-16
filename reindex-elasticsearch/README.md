@@ -89,7 +89,7 @@ O script permite a configuração de analisadores customizados e mapeamentos de 
 
 #### Arquivo de Analisadores (`analysis.json`)
 
-Define analisadores customizados para processamento de texto. O arquivo pode estar localizado em qualquer diretório. Exemplo de estrutura:
+Define analisadores customizados para processamento de texto. Exemplo de estrutura:
 
 ```json
 {
@@ -110,7 +110,7 @@ Define analisadores customizados para processamento de texto. O arquivo pode est
 
 #### Arquivo de Mapeamentos (`mappings.json`)
 
-Define a estrutura e tipos de dados dos campos do índice. O arquivo pode estar localizado em qualquer diretório. Exemplo de estrutura:
+Define a estrutura e tipos de dados dos campos do índice. Exemplo de estrutura:
 
 ```json
 {
@@ -366,4 +366,5 @@ Exemplo de log gerado:
 
 ## Conclusão
 Este script é uma ferramenta robusta para manutenção de índices em clusters Elasticsearch, proporcionando automação, segurança e rastreabilidade em operações críticas. Certifique-se de fornecer os argumentos corretamente e acompanhe os logs para monitorar o processamento.
+
 
